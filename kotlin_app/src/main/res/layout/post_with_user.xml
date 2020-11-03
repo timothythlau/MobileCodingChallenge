@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="postWithUser"
             type="life.league.challenge.kotlin.main.PostWithUserDTO" />
@@ -37,13 +36,13 @@
                 android:id="@+id/avatar"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:imageSrcCircleCrop="@{postWithUser.user.avatar}" />
+                app:imageSrcCircleCrop="@{postWithUser.avatar}" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/username"
-                android:text="@{postWithUser.user.name}"
+                android:text="@{postWithUser.username}"
                 tools:text="Test User Name"
                 android:textSize="16sp"
                 android:layout_marginStart="8dp"
@@ -58,7 +57,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@+id/title"
-            android:text="@{postWithUser.post.title}"
+            android:text="@{postWithUser.title}"
             tools:text="Title"
             android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -70,7 +69,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/description"
             tools:text="Test Description/nBlah blah blah"
-            android:text="@{postWithUser.post.body}"
+            android:text="@{postWithUser.body}"
             android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

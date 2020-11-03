@@ -10,8 +10,6 @@ import life.league.challenge.kotlin.api.Failure
 import life.league.challenge.kotlin.api.Outcome
 import life.league.challenge.kotlin.api.Service
 import life.league.challenge.kotlin.api.Success
-import life.league.challenge.kotlin.model.Post
-import life.league.challenge.kotlin.model.User
 
 class MainListViewModel : ViewModel() {
     fun getPosts(): LiveData<Outcome<List<PostWithUserDTO>>> {
@@ -29,12 +27,22 @@ class MainListViewModel : ViewModel() {
 
         postsAwait as? Failure ?: usersAwait as? Failure
         ?: Success((postsAwait as Success).response?.map { post ->
-            PostWithUserDTO(post, (usersAwait as Success).response?.find { user -> post.userId == user.id })
+            val user = (usersAwait as Success).response?.find { it.id == post.userId }
+            PostWithUserDTO(
+                    userId = post.userId,
+                    avatar = user?.avatar,
+                    username = user?.username,
+                    title = post.title,
+                    body = post.body
+            )
         })
     }
 }
 
 data class PostWithUserDTO(
-        val post: Post? = null,
-        val user: User? = null
+        val userId: Int? = null,
+        val avatar: String? = null,
+        val username: String? = null,
+        val title: String? = null,
+        val body: String? = null
 )
