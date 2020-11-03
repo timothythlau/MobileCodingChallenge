@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="postWithUser"
             type="life.league.challenge.kotlin.main.PostWithUserDTO" />
@@ -16,64 +17,64 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/avatar_username_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:id="@+id/avatar_username_container"
             android:onClick="@{() -> listener.onAvatarUsernameClicked(postWithUser)}"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
+                android:id="@+id/avatar"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:id="@+id/avatar"
+                app:imageSrcCircleCrop="@{postWithUser.user.avatar}"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:imageSrcCircleCrop="@{postWithUser.avatar}" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                android:id="@+id/username"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/username"
-                android:text="@{postWithUser.username}"
-                tools:text="Test User Name"
-                android:textSize="16sp"
                 android:layout_marginStart="8dp"
-                app:layout_constraintStart_toEndOf="@id/avatar"
+                android:text="@{postWithUser.user.name}"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="@id/avatar"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/avatar"
                 app:layout_constraintTop_toTopOf="@id/avatar"
-                app:layout_constraintBottom_toBottomOf="@id/avatar" />
+                tools:text="Test User Name" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
+            android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:id="@+id/title"
-            android:text="@{postWithUser.title}"
-            tools:text="Title"
             android:layout_marginTop="8dp"
-            app:layout_constraintStart_toStartOf="parent"
+            android:text="@{postWithUser.post.title}"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/avatar_username_container" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/avatar_username_container"
+            tools:text="Title" />
 
         <TextView
+            android:id="@+id/description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:id="@+id/description"
-            tools:text="Test Description/nBlah blah blah"
-            android:text="@{postWithUser.body}"
             android:layout_marginTop="8dp"
-            app:layout_constraintStart_toStartOf="parent"
+            android:text="@{postWithUser.post.body}"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/title" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            tools:text="Test Description/nBlah blah blah" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

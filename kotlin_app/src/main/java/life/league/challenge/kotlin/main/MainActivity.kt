@@ -1,6 +1,5 @@
 package life.league.challenge.kotlin.main
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +10,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import life.league.challenge.kotlin.R
 import life.league.challenge.kotlin.api.Failure
 import life.league.challenge.kotlin.api.Success
-import life.league.challenge.kotlin.userprofile.UserProfileActivity
+import life.league.challenge.kotlin.userprofile.getUserProfileActivityIntent
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity() {
 
     inner class MainListViewClickListenerImpl : MainListViewClickListener {
         override fun onAvatarUsernameClicked(postWithUserDTO: PostWithUserDTO) {
-            this@MainActivity.startActivity(Intent(this@MainActivity, UserProfileActivity::class.java))
+            this@MainActivity.startActivity(this@MainActivity.getUserProfileActivityIntent(postWithUserDTO.user))
         }
     }
 }
