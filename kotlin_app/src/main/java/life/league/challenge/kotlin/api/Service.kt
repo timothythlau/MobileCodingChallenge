@@ -4,9 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Base64
 import android.util.Log
-import life.league.challenge.kotlin.model.Account
-import life.league.challenge.kotlin.model.Post
-import life.league.challenge.kotlin.model.User
+import life.league.challenge.kotlin.model.*
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
@@ -77,6 +75,16 @@ object Service {
     suspend fun getPosts(): Outcome<List<Post>> {
         checkAccessToken()
         return getOutcome(api.posts(accessToken))
+    }
+
+    suspend fun getAlbums(userId: Int?): Outcome<List<Album>> {
+        checkAccessToken()
+        return getOutcome(api.albums(accessToken, userId))
+    }
+
+    suspend fun getPhotos(albumId: Int?): Outcome<List<Photo>> {
+        checkAccessToken()
+        return getOutcome(api.photos(accessToken, albumId))
     }
 
     private suspend fun checkAccessToken() {

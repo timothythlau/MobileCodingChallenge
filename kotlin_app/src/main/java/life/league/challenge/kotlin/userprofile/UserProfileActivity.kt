@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.GridLayoutManager
 import life.league.challenge.kotlin.databinding.ActivityUserProfileBinding
 import life.league.challenge.kotlin.model.User
 
@@ -30,10 +31,18 @@ class UserProfileActivity : AppCompatActivity() {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
+        val thumbnailAdapter = UserProfileThumbnailAdapter()
+        binding.albumRecyclerView.adapter = thumbnailAdapter
+        binding.albumRecyclerView.layoutManager = GridLayoutManager(this, 3)
+
         val viewModel = UserProfileViewModel()
         viewModel.setUser(intent.getParcelableExtra(USER_EXTRA)).observe(this, Observer {
             binding.userProfileDto = it
             binding.executePendingBindings()
+
+            thumbnailAdapter.itemList.clear()
+            it.albumPhotoDtoList?.let { thumbnailAdapter.itemList.addAll(it) }
+            thumbnailAdapter.notifyDataSetChanged()
         })
     }
 }
