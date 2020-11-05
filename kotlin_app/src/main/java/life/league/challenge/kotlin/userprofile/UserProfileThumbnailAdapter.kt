@@ -19,6 +19,10 @@ class UserProfileThumbnailAdapter : RecyclerView.Adapter<UserProfileThumbnailVie
     override fun onBindViewHolder(holder: UserProfileThumbnailViewHolder, position: Int) {
         holder.bind(itemList[position])
     }
+
+    override fun getItemId(position: Int): Long {
+        return itemList[position].id!!.toLong()
+    }
 }
 
 class UserProfileThumbnailViewHolder(private val binding: AlbumThumbnailListViewBinding) : RecyclerView.ViewHolder(binding.root) {

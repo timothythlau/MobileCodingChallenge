@@ -1,53 +1,47 @@
 package life.league.challenge.kotlin.userprofile
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.*
+import kotlinx.coroutines.launch
 import life.league.challenge.kotlin.api.Service
 import life.league.challenge.kotlin.api.Success
+import life.league.challenge.kotlin.model.Album
 import life.league.challenge.kotlin.model.User
 
 class UserProfileViewModel : ViewModel() {
-    val mergedLiveData = MediatorLiveData<UserProfileDTO>()
+    val photosLiveData = MutableLiveData<List<AlbumPhotoDTO>>()
+    var albumList: List<Album> = emptyList()
 
     fun setUser(user: User?): LiveData<UserProfileDTO> {
-        mergedLiveData.addSource(getUserLiveData(user)) { user ->
-            mergedLiveData.postValue(
-                    UserProfileDTO(
-                            userId = user.id,
-                            name = user.name,
-                            avatar = user.avatar,
-                            email = user.email,
-                            phone = user.phone,
-                            website = user.website
-                    )
-            )
-
-            mergedLiveData.addSource(getAlbumAndPhotosForUser(mergedLiveData.value?.userId)) { albumPhotoList ->
-                val newAlbumList = mergedLiveData.value?.albumPhotoDtoList?.toMutableList()?.apply { addAll(albumPhotoList) }
-                        ?: albumPhotoList
-                mergedLiveData.postValue(mergedLiveData.value?.copy(albumPhotoDtoList = newAlbumList))
+        return liveData {
+            user?.let {
+                emit(UserProfileDTO(it.id, it.name, it.avatar, it.email, it.phone, it.website))
             }
         }
-        return mergedLiveData
     }
 
-    private fun getUserLiveData(user: User?): LiveData<User> {
-        return liveData { user?.let { emit(it) } }
+    fun getAlbumsForUser(userId: Int?): LiveData<List<Album>> {
+        return liveData {
+            userId?.let {
+                val albumsOutcome = Service.getAlbums(it)
+                (albumsOutcome as? Success)?.response?.let { emit(it) }
+            }
+        }
     }
 
-    private fun getAlbumAndPhotosForUser(userId: Int?): LiveData<List<AlbumPhotoDTO>> {
-        return liveData(Dispatchers.IO) {
-            val albumsOutcome = Service.getAlbums(userId)
-            when (albumsOutcome) {
-                is Success -> {
-                    albumsOutcome.response?.forEach {
-                        val photos = Service.getPhotos(it.id)
-                        if (photos is Success) {
-                            emit(photos.response!!.map { AlbumPhotoDTO(it.albumId, it.url, it.thumbnailUrl) })
-                        }
+    fun getNextAlbumThumbnails() {
+        viewModelScope.launch {
+            val indexToGet = when (val lastRetrievedAlbumId = photosLiveData.value?.lastOrNull()?.albumId) {
+                null -> 0
+                else -> albumList.indexOfLast { it.id == lastRetrievedAlbumId }.plus(1).takeIf { it < albumList.size }
+            }
+
+            indexToGet?.let {
+                val photosOutcome = Service.getPhotos(albumList[it].id)
+                if (photosOutcome is Success) {
+                    photosOutcome.response?.let {
+                        val newPhotosToAdd = it.map { AlbumPhotoDTO(it.id, it.albumId, it.url, it.thumbnailUrl) }
+                        photosLiveData.postValue(photosLiveData.value?.plus(newPhotosToAdd)
+                                ?: newPhotosToAdd)
                     }
                 }
             }
@@ -61,11 +55,11 @@ data class UserProfileDTO(
         val avatar: String? = null,
         val email: String? = null,
         val phone: String? = null,
-        val website: String? = null,
-        val albumPhotoDtoList: List<AlbumPhotoDTO>? = null
+        val website: String? = null
 )
 
 data class AlbumPhotoDTO(
+        val id: Int? = null,
         val albumId: Int? = null,
         val url: String? = null,
         val thumbnailUrl: String? = null

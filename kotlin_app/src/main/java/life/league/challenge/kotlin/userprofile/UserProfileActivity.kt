@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import life.league.challenge.kotlin.databinding.ActivityUserProfileBinding
 import life.league.challenge.kotlin.model.User
 
@@ -21,6 +22,7 @@ fun Context.getUserProfileActivityIntent(user: User?): Intent {
 
 class UserProfileActivity : AppCompatActivity() {
     lateinit var binding: ActivityUserProfileBinding
+    lateinit var viewModel: UserProfileViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,17 +34,39 @@ class UserProfileActivity : AppCompatActivity() {
         super.onPostCreate(savedInstanceState)
 
         val thumbnailAdapter = UserProfileThumbnailAdapter()
+        thumbnailAdapter.setHasStableIds(true)
         binding.albumRecyclerView.adapter = thumbnailAdapter
         binding.albumRecyclerView.layoutManager = GridLayoutManager(this, 3)
 
-        val viewModel = UserProfileViewModel()
+        viewModel = UserProfileViewModel()
         viewModel.setUser(intent.getParcelableExtra(USER_EXTRA)).observe(this, Observer {
             binding.userProfileDto = it
             binding.executePendingBindings()
 
+            viewModel.getAlbumsForUser(it.userId).observe(this, Observer {
+                viewModel.albumList = it
+                viewModel.getNextAlbumThumbnails()
+            })
+        })
+
+        viewModel.photosLiveData.observe(this, Observer {
             thumbnailAdapter.itemList.clear()
-            it.albumPhotoDtoList?.let { thumbnailAdapter.itemList.addAll(it) }
+            thumbnailAdapter.itemList.addAll(it)
             thumbnailAdapter.notifyDataSetChanged()
         })
+
+        binding.albumRecyclerView.addOnScrollListener(AlbumScrollListener())
+    }
+
+    inner class AlbumScrollListener : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+
+            (recyclerView.layoutManager as? GridLayoutManager)?.let {
+                if (it.findLastVisibleItemPosition() == it.itemCount - 1) {
+                    viewModel.getNextAlbumThumbnails()
+                }
+            }
+        }
     }
 }
