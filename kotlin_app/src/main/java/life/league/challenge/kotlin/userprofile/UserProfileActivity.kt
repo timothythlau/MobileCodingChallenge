@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
@@ -33,7 +34,11 @@ class UserProfileActivity : AppCompatActivity() {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
-        val thumbnailAdapter = UserProfileThumbnailAdapter()
+        binding.photoContainerListener = PhotoContainerListenerImpl()
+        binding.photoContainerVisibility = View.GONE
+        binding.executePendingBindings()
+
+        val thumbnailAdapter = UserProfileThumbnailAdapter(UserProfileThumbnailClickListenerImpl())
         thumbnailAdapter.setHasStableIds(true)
         binding.albumRecyclerView.adapter = thumbnailAdapter
         binding.albumRecyclerView.layoutManager = GridLayoutManager(this, 3)
@@ -69,4 +74,23 @@ class UserProfileActivity : AppCompatActivity() {
             }
         }
     }
+
+    inner class UserProfileThumbnailClickListenerImpl : UserProfileThumbnailClickListener {
+        override fun onThumbnailClicked(albumPhotoDTO: AlbumPhotoDTO) {
+            binding.fullPhotoUrl = albumPhotoDTO.url
+            binding.photoContainerVisibility = View.VISIBLE
+            binding.executePendingBindings()
+        }
+    }
+
+    inner class PhotoContainerListenerImpl : PhotoContainerListener {
+        override fun onClick() {
+            binding.photoContainerVisibility = View.GONE
+            binding.executePendingBindings()
+        }
+    }
+}
+
+interface PhotoContainerListener {
+    fun onClick()
 }

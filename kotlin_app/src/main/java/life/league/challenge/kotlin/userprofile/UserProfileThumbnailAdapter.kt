@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import life.league.challenge.kotlin.databinding.AlbumThumbnailListViewBinding
 
-class UserProfileThumbnailAdapter : RecyclerView.Adapter<UserProfileThumbnailViewHolder>() {
+class UserProfileThumbnailAdapter(val listener: UserProfileThumbnailClickListener) : RecyclerView.Adapter<UserProfileThumbnailViewHolder>() {
     val itemList = ArrayList<AlbumPhotoDTO>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserProfileThumbnailViewHolder {
@@ -17,7 +17,7 @@ class UserProfileThumbnailAdapter : RecyclerView.Adapter<UserProfileThumbnailVie
     }
 
     override fun onBindViewHolder(holder: UserProfileThumbnailViewHolder, position: Int) {
-        holder.bind(itemList[position])
+        holder.bind(itemList[position], listener)
     }
 
     override fun getItemId(position: Int): Long {
@@ -26,8 +26,13 @@ class UserProfileThumbnailAdapter : RecyclerView.Adapter<UserProfileThumbnailVie
 }
 
 class UserProfileThumbnailViewHolder(private val binding: AlbumThumbnailListViewBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(albumPhotoDTO: AlbumPhotoDTO) {
+    fun bind(albumPhotoDTO: AlbumPhotoDTO, listener: UserProfileThumbnailClickListener) {
         binding.albumPhotoDto = albumPhotoDTO
+        binding.listener = listener
         binding.executePendingBindings()
     }
+}
+
+interface UserProfileThumbnailClickListener {
+    fun onThumbnailClicked(albumPhotoDTO: AlbumPhotoDTO)
 }

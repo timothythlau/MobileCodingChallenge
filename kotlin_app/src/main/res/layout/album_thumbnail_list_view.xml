@@ -7,6 +7,10 @@
         <variable
             name="albumPhotoDto"
             type="life.league.challenge.kotlin.userprofile.AlbumPhotoDTO" />
+
+        <variable
+            name="listener"
+            type="life.league.challenge.kotlin.userprofile.UserProfileThumbnailClickListener" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -19,6 +23,7 @@
             android:id="@+id/thumbnail"
             android:layout_width="75dp"
             android:layout_height="75dp"
+            android:onClick="@{() -> listener.onThumbnailClicked(albumPhotoDto)}"
             app:imageSrc="@{albumPhotoDto.thumbnailUrl}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
