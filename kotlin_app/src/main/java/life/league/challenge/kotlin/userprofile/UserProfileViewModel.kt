@@ -1,13 +1,16 @@
 package life.league.challenge.kotlin.userprofile
 
-import androidx.lifecycle.*
-import kotlinx.coroutines.launch
-import life.league.challenge.kotlin.api.Service
-import life.league.challenge.kotlin.api.Success
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import life.league.challenge.kotlin.api.LeagueRepository
+import life.league.challenge.kotlin.api.Outcome
 import life.league.challenge.kotlin.model.Album
+import life.league.challenge.kotlin.model.Photo
 import life.league.challenge.kotlin.model.User
 
-class UserProfileViewModel : ViewModel() {
+class UserProfileViewModel(private val leagueRepository: LeagueRepository) : ViewModel() {
     val photosLiveData = MutableLiveData<List<AlbumPhotoDTO>>()
     var albumList: List<Album> = emptyList()
 
@@ -19,33 +22,26 @@ class UserProfileViewModel : ViewModel() {
         }
     }
 
-    fun getAlbumsForUser(userId: Int?): LiveData<List<Album>> {
-        return liveData {
-            userId?.let {
-                val albumsOutcome = Service.getAlbums(it)
-                (albumsOutcome as? Success)?.response?.let { emit(it) }
-            }
-        }
+    fun getAlbumsForUser(userId: Int): LiveData<Outcome<List<Album>>> {
+        return leagueRepository.getAlbums(userId)
     }
 
-    fun getNextAlbumThumbnails() {
-        viewModelScope.launch {
-            val indexToGet = when (val lastRetrievedAlbumId = photosLiveData.value?.lastOrNull()?.albumId) {
-                null -> 0
-                else -> albumList.indexOfLast { it.id == lastRetrievedAlbumId }.plus(1).takeIf { it < albumList.size }
-            }
-
-            indexToGet?.let {
-                val photosOutcome = Service.getPhotos(albumList[it].id)
-                if (photosOutcome is Success) {
-                    photosOutcome.response?.let {
-                        val newPhotosToAdd = it.map { AlbumPhotoDTO(it.id, it.albumId, it.url, it.thumbnailUrl) }
-                        photosLiveData.postValue(photosLiveData.value?.plus(newPhotosToAdd)
-                                ?: newPhotosToAdd)
-                    }
-                }
-            }
+    fun getNextAlbumThumbnails(): LiveData<Outcome<List<Photo>>>? {
+        val indexToGet = when (val lastRetrievedAlbumId = photosLiveData.value?.lastOrNull()?.albumId) {
+            null -> 0
+            else -> albumList.indexOfLast { it.id == lastRetrievedAlbumId }.plus(1).takeIf { it < albumList.size }
         }
+
+        indexToGet?.let {
+            return leagueRepository.getPhotos(albumList[it].id!!)
+        }
+
+        return null
+    }
+
+    fun setAlbumThumbnails(photos: List<Photo>) {
+        val newPhotosToAdd = photos.map { AlbumPhotoDTO(it.id, it.albumId, it.url, it.thumbnailUrl) }
+        photosLiveData.postValue(photosLiveData.value?.plus(newPhotosToAdd) ?: newPhotosToAdd)
     }
 }
 

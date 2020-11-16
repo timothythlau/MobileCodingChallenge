@@ -1,15 +1,15 @@
 package life.league.challenge.kotlin.main
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
 import life.league.challenge.kotlin.R
-import life.league.challenge.kotlin.api.Failure
-import life.league.challenge.kotlin.api.Success
+import life.league.challenge.kotlin.api.AppExecutors
+import life.league.challenge.kotlin.api.LeagueRepository
+import life.league.challenge.kotlin.db.AppDatabase
 import life.league.challenge.kotlin.userprofile.getUserProfileActivityIntent
 
 class MainActivity : AppCompatActivity() {
@@ -31,18 +31,14 @@ class MainActivity : AppCompatActivity() {
         recycler_view.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recycler_view.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
 
-        val viewModel = MainListViewModel()
+        val viewModel = MainListViewModel(LeagueRepository(AppDatabase.getInstance(applicationContext), AppExecutors.getInstance(applicationContext)))
         viewModel.getPosts().observe(this,
                 Observer {
-                    when (it) {
-                        is Failure -> Toast.makeText(this, it.errorResponse, Toast.LENGTH_SHORT).show()
-                        is Success -> {
-                            adapter.adapterList.clear()
-                            adapter.adapterList.addAll(it.response!!)
-                            adapter.notifyDataSetChanged()
-                        }
-                    }
+                    adapter.adapterList.clear()
+                    adapter.adapterList.addAll(it)
+                    adapter.notifyDataSetChanged()
                 })
+
     }
 
     inner class MainListViewClickListenerImpl : MainListViewClickListener {

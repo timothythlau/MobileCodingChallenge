@@ -1,22 +1,17 @@
 package life.league.challenge.kotlin.api
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Base64
-import android.util.Log
 import life.league.challenge.kotlin.model.*
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.IOException
 
 object Service {
 
     private const val HOST = "https://engineering.league.dev/challenge/api/"
-    private const val TAG = "Service"
-    var accessToken = ""
+    private var accessToken = ""
 
     private val api: Api by lazy {
         val okHttpClient = OkHttpClient.Builder()
@@ -33,71 +28,54 @@ object Service {
         retrofit.create<Api>(Api::class.java)
     }
 
-    fun login(username: String, password: String, callback: (result: Outcome<Account>) -> Unit) {
-
+    private suspend fun login(username: String, password: String): Response<Account> {
         val credentials = "$username:$password"
         val auth = "Basic " + Base64.encodeToString(credentials.toByteArray(),
                 Base64.NO_WRAP)
-        Thread(Runnable {
-            try {
-                val response: Response<Account> = api.login(auth).execute()
-                Handler(Looper.getMainLooper()).post {
-                    if (response.isSuccessful) {
-                        callback.invoke(Success(response.body()))
-                    } else {
-                        callback.invoke(Failure(response.message()))
-                    }
-                }
-            } catch (e: IOException) {
-                Log.e(TAG, "Login failed", e)
-                callback.invoke(Failure(e.message ?: ""))
-            }
-        }).start()
-    }
-
-    suspend fun login(username: String, password: String): Outcome<Account> {
-        val credentials = "$username:$password"
-        val auth = "Basic " + Base64.encodeToString(credentials.toByteArray(),
-                Base64.NO_WRAP)
-        return getOutcome(api.suspendLogin(auth))
-                .also { outcome ->
-                    if (outcome is Success) {
-                        outcome.response?.apiKey?.let { accessToken = it }
-                    }
-                }
+        return api.suspendLogin(auth)
     }
 
     suspend fun getUsers(): Outcome<List<User>> {
-        checkAccessToken()
-        return getOutcome(api.users(accessToken))
+        (checkAccessToken() as? Failure)?.let { return it }
+        return getOutcome { api.users(accessToken) }
     }
 
     suspend fun getPosts(): Outcome<List<Post>> {
-        checkAccessToken()
-        return getOutcome(api.posts(accessToken))
+        (checkAccessToken() as? Failure)?.let { return it }
+        return getOutcome { api.posts(accessToken) }
     }
 
     suspend fun getAlbums(userId: Int?): Outcome<List<Album>> {
-        checkAccessToken()
-        return getOutcome(api.albums(accessToken, userId))
+        (checkAccessToken() as? Failure)?.let { return it }
+        return getOutcome { api.albums(accessToken, userId) }
     }
 
     suspend fun getPhotos(albumId: Int?): Outcome<List<Photo>> {
-        checkAccessToken()
-        return getOutcome(api.photos(accessToken, albumId))
+        (checkAccessToken() as? Failure)?.let { return it }
+        return getOutcome { api.photos(accessToken, albumId) }
     }
 
-    private suspend fun checkAccessToken() {
+    private suspend fun checkAccessToken(): Outcome<String> {
         if (accessToken.isEmpty()) {
-            login("Hello", "World")
+            when (val outcome = getOutcome { login("Hello", "World") }) {
+                is Success -> outcome.response?.apiKey?.let { accessToken = it }
+                is Failure -> return outcome
+            }
         }
+
+        return Success(accessToken)
     }
 
-    private fun <T> getOutcome(response: Response<T>): Outcome<T> {
-        return if (response.isSuccessful) {
-            Success(response.body())
-        } else {
-            Failure(response.message())
+    private suspend fun <T> getOutcome(apiMethod: suspend () -> Response<T>): Outcome<T> {
+        return try {
+            val response = apiMethod.invoke()
+            if (response.isSuccessful) {
+                Success(response.body())
+            } else {
+                Failure(response.message())
+            }
+        } catch (e: Exception) {
+            Failure(e.message)
         }
     }
 }
