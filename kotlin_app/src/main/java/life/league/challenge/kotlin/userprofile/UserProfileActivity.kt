@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.wajahatkarim3.easyflipviewpager.CardFlipPageTransformer
 import life.league.challenge.kotlin.api.AppExecutors
 import life.league.challenge.kotlin.api.LeagueRepository
 import life.league.challenge.kotlin.api.Outcome
@@ -46,6 +47,11 @@ class UserProfileActivity : AppCompatActivity() {
         binding.photoContainerListener = PhotoContainerListenerImpl()
         binding.photoContainerVisibility = View.GONE
         binding.executePendingBindings()
+
+        binding.cardViewPager.let {
+            it.adapter = UserProfileCardViewPagerAdapter()
+            it.setPageTransformer(false, CardFlipPageTransformer().apply { isScalable = false })
+        }
 
         val thumbnailAdapter = UserProfileThumbnailAdapter(UserProfileThumbnailClickListenerImpl())
         thumbnailAdapter.setHasStableIds(true)

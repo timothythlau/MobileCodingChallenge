@@ -17,7 +17,7 @@ class UserProfileViewModel(private val leagueRepository: LeagueRepository) : Vie
     fun setUser(user: User?): LiveData<UserProfileDTO> {
         return liveData {
             user?.let {
-                emit(UserProfileDTO(it.id, it.name, it.avatar, it.email, it.phone, it.website))
+                emit(UserProfileDTO(it.id, it.name, it.avatar, it.email, it.phone, it.website, it.company?.name, it.company?.catchPhrase, it.company?.bs))
             }
         }
     }
@@ -51,7 +51,10 @@ data class UserProfileDTO(
         val avatar: String? = null,
         val email: String? = null,
         val phone: String? = null,
-        val website: String? = null
+        val website: String? = null,
+        val companyName: String? = null,
+        val companyCatchphrase: String? = null,
+        val companyBs: String? = null
 )
 
 data class AlbumPhotoDTO(
