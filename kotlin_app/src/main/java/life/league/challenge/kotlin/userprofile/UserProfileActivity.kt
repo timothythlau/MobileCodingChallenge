@@ -40,6 +40,9 @@ class UserProfileActivity : AppCompatActivity() {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
+        title = "User Profile"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         binding.photoContainerListener = PhotoContainerListenerImpl()
         binding.photoContainerVisibility = View.GONE
         binding.executePendingBindings()
@@ -106,6 +109,11 @@ class UserProfileActivity : AppCompatActivity() {
             binding.photoContainerVisibility = View.GONE
             binding.executePendingBindings()
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 }
 

@@ -26,6 +26,8 @@ class MainActivity : AppCompatActivity() {
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
+        title = "Posts"
+
         val adapter = MainListAdapter(MainListViewClickListenerImpl())
         recycler_view.adapter = adapter
         recycler_view.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
